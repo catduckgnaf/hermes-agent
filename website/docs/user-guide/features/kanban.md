@@ -1482,3 +1482,10 @@ Every transition appends a row to `task_events`. Each row carries an optional `r
 ## Out of scope
 
 Kanban is deliberately single-host. `~/.hermes/kanban.db` is a local SQLite file and the dispatcher spawns workers on the same machine. Running a shared board across two hosts is not supported — there's no coordination primitive for "worker X on host A, worker Y on host B," and the crash-detection path assumes PIDs are host-local. If you need multi-host, run an independent board per host and use `delegate_task` / a message queue to bridge them.
+
+
+### Reopening a done card
+
+Use `hermes kanban reopen TASK_ID --reason "what remains"` to reopen a card that was completed
+before its work was finished. It returns to `ready` (or `todo` while a parent is open), the
+`reopened_done` audit event and run history are preserved, and descendants are re-gated on it.

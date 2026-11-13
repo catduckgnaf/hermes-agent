@@ -13,7 +13,7 @@ locks). Schema: tasks, task_links, task_comments, task_events, task_runs, attach
 """
 
 from __future__ import annotations
-
+from hermes_cli.kanban_db_reopen import reopen_done_task
 import contextlib
 import json
 import os
