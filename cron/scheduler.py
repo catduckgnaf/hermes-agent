@@ -2063,6 +2063,14 @@ def _final_response_from_result(result: dict, job_id: str, job_name: str, AIAgen
     max_iteration_summary = is_max_iteration_handoff(result)
     if result.get("failed") is True or (result.get("completed") is False and not max_iteration_summary):
         raise RuntimeError(result.get("error") or final_response_text or "agent reported failure")
+    # A tool-guardrail stop (e.g. the per-turn web_search cap) ends the turn with a
+    # polite "I stopped retrying" reply that was recorded as ok and delivered as the report. Unattended,
+    # that is a failed run: raise so it reaches failure bookkeeping and the daily incident digest.
+    guardrail = result.get("guardrail")
+    if isinstance(guardrail, dict) and guardrail.get("action") in {"block", "halt"}:
+        raise RuntimeError(
+            f"Tool guardrail stopped the run: {guardrail.get('code')} on {guardrail.get('tool_name') or 'a tool'} "
+            f"after {guardrail.get('count')} calls. {guardrail.get('message') or ''}".strip())
     if max_iteration_summary:
         logger.warning(
             "Job '%s' reached the iteration limit but produced a final fallback response; "
