@@ -1482,3 +1482,17 @@ Every transition appends a row to `task_events`. Each row carries an optional `r
 ## Out of scope
 
 Kanban is deliberately single-host. `~/.hermes/kanban.db` is a local SQLite file and the dispatcher spawns workers on the same machine. Running a shared board across two hosts is not supported — there's no coordination primitive for "worker X on host A, worker Y on host B," and the crash-detection path assumes PIDs are host-local. If you need multi-host, run an independent board per host and use `delegate_task` / a message queue to bridge them.
+
+
+### Desktop and TUI notification batching
+
+`kanban.chat_notifications.passive_status` defaults to `true`: ready, todo, running, scheduled,
+and review status transitions appear on the status line without creating a chat turn. Up to
+20 passive transitions are folded into the next actionable notification. Completion, blocking,
+and timeout events still wake the session. Set `passive_status: false` to retain waking status
+transitions.
+
+`kanban.chat_notifications.batch_window_seconds` controls the quiet window before an actionable
+batch runs (default two polling intervals). `batch_max_wait_seconds` bounds the wait from the
+first queued event (default 12 polling intervals). Both accept nonnegative seconds, including
+zero to dispatch without waiting. Settings resolve under the session's owning profile.
