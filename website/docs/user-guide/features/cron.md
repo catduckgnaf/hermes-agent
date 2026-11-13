@@ -1490,3 +1490,9 @@ Cron jobs run in a completely fresh agent session. The prompt must contain every
 ## Security
 
 Scheduled task prompts are scanned for prompt-injection and credential-exfiltration patterns at creation and update time. Prompts containing invisible Unicode tricks, SSH backdoor attempts, or obvious secret-exfiltration payloads are blocked.
+
+
+### Receipt recovery
+
+When a scheduler restarts mid-fire, receipt reconciliation finishes the recovered run's delivery
+and completion bookkeeping under the firing profile's secret scope, then restores the previous scope.
