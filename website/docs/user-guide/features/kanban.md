@@ -1482,3 +1482,10 @@ Every transition appends a row to `task_events`. Each row carries an optional `r
 ## Out of scope
 
 Kanban is deliberately single-host. `~/.hermes/kanban.db` is a local SQLite file and the dispatcher spawns workers on the same machine. Running a shared board across two hosts is not supported — there's no coordination primitive for "worker X on host A, worker Y on host B," and the crash-detection path assumes PIDs are host-local. If you need multi-host, run an independent board per host and use `delegate_task` / a message queue to bridge them.
+
+
+### Iteration budget notices for workers
+
+Dispatched workers receive a one-shot checkpoint notice near their iteration limit and a
+separate final notice with five iterations remaining when the total budget is at least 20.
+These notices do not themselves complete or block a card.
