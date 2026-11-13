@@ -2592,16 +2592,7 @@ class HallucinatedCardsError(ValueError):
         )
 
 
-class EmptyCompletionError(ValueError):
-    """``complete_task`` refused: no substantive ``result``, ``summary``, or
-    stored result. A ``ValueError`` so tool error handlers treat it as
-    recoverable. Review approvals are exempt (the human is the record)."""
-
-    def __init__(self, task_id: str):
-        self.task_id = task_id
-        super().__init__(
-            f"completion blocked: {task_id} has no result or summary evidence"
-        )
+from hermes_cli.kanban_completion_remaining import EmptyCompletionError, IncompleteCompletionError
 
 
 class ArtifactPreservationError(RuntimeError):
@@ -2667,6 +2658,10 @@ def complete_task(
     from hermes_cli.kanban_pr_acceptance_store import prepare_acceptance, record_acceptance
     verified_cards = _gate_created_cards(conn, task_id, created_cards, summary or result)
     _gate_empty_completion(conn, task_id, result=result, summary=summary)
+    from hermes_cli.kanban_completion_remaining import _gate_incomplete_completion
+    _gate_incomplete_completion(
+        conn, task_id, metadata=metadata, expected_run_id=expected_run_id, force=force,
+    )
     metadata = _merge_completion_prose_artifacts(
         conn, task_id, metadata, summary=summary, result=result,
     )

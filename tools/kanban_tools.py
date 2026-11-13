@@ -777,6 +777,15 @@ def _handle_complete(args: dict, **kw) -> str:
                 f"in-flight (no state change). Retry kanban_complete with the same "
                 f"summary/metadata and either drop these ids from created_cards, or pass "
                 f"created_cards=[] to skip the card-claim check entirely.")
+        except kb.IncompleteCompletionError as incomplete_err:
+            # Worker admitted unfinished acceptance items; done is terminal for
+            # workers, so refuse and keep the card in-flight.
+            return tool_error(
+                f"kanban_complete blocked: {incomplete_err}. Your task is still in-flight (no "
+                f"state change). Finish those items and complete again, or if you cannot finish "
+                f"them in this run: post a kanban_comment handoff, then call kanban_schedule "
+                f"or kanban_request_review. Do not drop the "
+                f"items from metadata to get past this check.")
         except kb.EmptyCompletionError as empty_err:
             # Same shape as the card gate: nothing was mutated, the audit event
             # already landed; the worker retries with evidence instead of stalling.

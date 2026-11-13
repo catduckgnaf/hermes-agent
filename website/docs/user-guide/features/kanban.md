@@ -1482,3 +1482,12 @@ Every transition appends a row to `task_events`. Each row carries an optional `r
 ## Out of scope
 
 Kanban is deliberately single-host. `~/.hermes/kanban.db` is a local SQLite file and the dispatcher spawns workers on the same machine. Running a shared board across two hosts is not supported — there's no coordination primitive for "worker X on host A, worker Y on host B," and the crash-detection path assumes PIDs are host-local. If you need multi-host, run an independent board per host and use `delegate_task` / a message queue to bridge them.
+
+
+### Completion with outstanding work
+
+A dispatched worker cannot complete a card when its handoff metadata lists nonempty
+`remaining`, `remaining_work`, `unresolved`, or `outstanding` items. Empty lists and explicit
+empty markers such as `none` or `n/a` are accepted. Manual completion and an operator's force
+override remain available. Keep unfinished work in a checkpoint and schedule continuation,
+or request review when implementation is ready.
